@@ -1,0 +1,103 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS CloudFormation S3 Bucket and DynamoDb Table
+Parameters:
+  S3BucketName:
+    Description: Enter S3 Bucket Name
+    Type: String
+    AllowedPattern: "[a-zA-Z0-9]*"
+    MinLength: '1'
+    MaxLength: '100'
+    ConstraintDescription: must contain only alphanumberic characters 
+  DBTableName:
+    Description: Enter DB Table Name
+    Type: String
+    AllowedPattern: "[a-zA-Z0-9]*"
+    MinLength: '1'
+    MaxLength: '100'
+    ConstraintDescription: must contain only alphanumberic characters     
+  HashKeyElementName:
+    Description: HashType PrimaryKey Name
+    Type: String
+    AllowedPattern: "[a-zA-Z0-9]*"
+    MinLength: '1'
+    MaxLength: '2048'
+    ConstraintDescription: must contain only alphanumberic characters
+  HashKeyElementType:
+    Description: HashType PrimaryKey Type
+    Type: String
+    Default: S
+    AllowedPattern: "[S|N]"
+    MinLength: '1'
+    MaxLength: '1'
+    ConstraintDescription: must be either S for String or N for Number
+  RangeKeyName:
+    Description: HashType Sort Key Name
+    Type: String
+    AllowedPattern: "[a-zA-Z0-9]*"
+    MinLength: '1'
+    MaxLength: '2048'
+    ConstraintDescription: must contain only alphanumberic characters
+  RangeKeyNameType:
+    Description: HashType Sort Key Type
+    Type: String
+    Default: S
+    AllowedPattern: "[S|N]"
+    MinLength: '1'
+    MaxLength: '1'
+    ConstraintDescription: must be either S for String or N for Number    
+  ReadCapacityUnits:
+    Description: Provisioned read throughput
+    Type: Number
+    Default: '5'
+    MinValue: '5'
+    MaxValue: '10000'
+    ConstraintDescription: must be between 5 and 10000
+  WriteCapacityUnits:
+    Description: Provisioned write throughput
+    Type: Number
+    Default: '5'
+    MinValue: '5'
+    MaxValue: '10000'
+    ConstraintDescription: must be between 5 and 10000
+Resources: 
+  MyS3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: 
+        Ref: S3BucketName
+  myDynamoDBTable: 
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: 
+        Ref: DBTableName
+      TableClass: STANDARD
+      AttributeDefinitions:
+      - AttributeName:
+          Ref: HashKeyElementName
+        AttributeType:
+          Ref: HashKeyElementType
+      - AttributeName:
+          Ref: RangeKeyName
+        AttributeType:
+          Ref: RangeKeyNameType          
+      KeySchema:
+      - AttributeName:
+          Ref: HashKeyElementName
+        KeyType: HASH
+      - AttributeName:
+          Ref: RangeKeyName
+        KeyType: RANGE       
+      ProvisionedThroughput:
+        ReadCapacityUnits:
+          Ref: ReadCapacityUnits
+        WriteCapacityUnits:
+          Ref: WriteCapacityUnits
+Outputs:
+  BucketName:
+    Value:
+      Ref: MyS3Bucket
+    Description: Table name of the newly created S3 Bucket 
+  TableName:
+    Value:
+      Ref: myDynamoDBTable
+    Description: Table name of the newly created DynamoDB table
